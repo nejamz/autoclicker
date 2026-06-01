@@ -1,10 +1,16 @@
 # autoclicker
-Dual-Point Autoclicker
-How to use this version:
-Run the script via your Command Prompt (python autoclicker.py).
+🔴 Crucial Run Requirement (Read this if it still doesn't click!)
+If your mouse still moves to the target point but doesn't actually click down on the browser window or application:
 
-Move your mouse cursor over the Serial Number field and press F2. You will see it print the coordinates in the console.
+Close your current Command Prompt window.
 
-Move your mouse cursor over the Serial Password field (or the Confirm button) and press F3.
+Press your Windows key, type cmd.
 
-Press F4 to start. The script will snap your mouse to Point A, click, wait, snap to Point B, click, and continue repeating back and forth!
+Right-click on Command Prompt and select Run as Administrator.
+
+Inside that new admin prompt, navigate to your folder and launch your script:
+
+DOS
+cd Desktop
+python autoclicker.py
+Running your terminal window as an administrator grants Python permission to press buttons on secure application surfaces.
