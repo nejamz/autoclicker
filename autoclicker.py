@@ -19,6 +19,7 @@ class UniversalClicker:
         self.point_a = None
         self.point_b = None
         self.current_target = "A"
+        self.pause_event = threading.Event()
 
     def set_a(self):
         self.point_a = pyautogui.position()
@@ -41,24 +42,22 @@ class UniversalClicker:
         
         self.running = not self.running
         if self.running:
-            print(f"[▶] Autoclicker STARTED (Speed: {self.delay}s delay)")
+            print(f"\n[▶] Autoclicker STARTED (Speed: {self.delay}s delay)")
             self.current_target = "A"
         else:
-            print("[⏸] Autoclicker PAUSED")
+            print("\n[⏸] Autoclicker PAUSED")
+            # Signal the main thread that we are paused so it can prompt for a speed change
+            self.pause_event.set()
 
     def exit(self):
-        print("[🛑] Closing script...")
+        print("\n[🛑] Closing script...")
         self.active = False
         self.running = False
+        self.pause_event.set() # Unblock main thread input if waiting
 
     def robust_click(self, coordinates):
-        """
-        Moves to the coordinates and performs a distinct down-and-up click action
-        to ensure the operating system registers it inside application panels.
-        """
         try:
             pyautogui.moveTo(coordinates[0], coordinates[1])
-            # Hold the click down for 50 milliseconds so Windows recognizes it
             pyautogui.mouseDown()
             time.sleep(0.05)
             pyautogui.mouseUp()
@@ -84,7 +83,7 @@ class UniversalClicker:
 
 def main():
     print("=====================================")
-    print("    UPGRADED ROBUST AUTOCLICKER     ")
+    print("   SPEED-ADJUSTABLE AUTOCLICKER     ")
     print("=====================================")
     
     while True:
@@ -123,8 +122,26 @@ def main():
     keyboard.add_hotkey(TOGGLE_KEY, clicker.toggle)
     keyboard.add_hotkey(EXIT_KEY, clicker.exit)
 
+    # Main thread watches for pause triggers to change speeds
     while clicker.active:
-        time.sleep(0.5)
+        clicker.pause_event.wait() # Sleep here until F4 is pressed to pause
+        if not clicker.active:
+            break
+            
+        print("--- Speed Adjustment Option ---")
+        new_speed = input(f"Enter new delay speed (or press ENTER to keep current {clicker.delay}s): ").strip()
+        
+        if new_speed:
+            try:
+                clicker.delay = float(new_speed)
+                print(f"[⚙️] Speed updated! New delay: {clicker.delay}s")
+            except ValueError:
+                print("[⚠️] Invalid number entered. Keeping previous speed.")
+        else:
+            print("[ℹ️] Speed unchanged.")
+            
+        print(f"Ready to resume. Press [{TOGGLE_KEY.upper()}] to run again.\n")
+        clicker.pause_event.clear() # Reset the event listener
 
     click_thread.join()
 
